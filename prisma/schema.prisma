@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Users {
+  id Int @id @default(autoincrement())
+  username String @unique 
+  password String
+  reports Reports[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Analysis {
+  id Int @id @default(autoincrement())
+  status ReportStatus @default(PENDING)
+  errorCount Int @default(0)
+  startedAt DateTime @default(now())
+  finishedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  reportId Int @unique
+  report Reports @relation(fields: [reportId], references: [id])
+}
+
+model Reports {
+  id Int @id @default(autoincrement())
+  partNumber String
+  plantCode String
+  filename String
+  analysis Analysis?
+  fileData FileDatas?
+  createdBy Int
+  user Users @relation(fields: [createdBy], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model FileDatas {
+  id Int @id @default(autoincrement())
+  data Bytes
+  metadata Json? @db.JsonB
+  reportId Int @unique
+  report Reports @relation(fields: [reportId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+enum ReportStatus {
+  PENDING
+  PROCESSING
+  FINISHED
+}
