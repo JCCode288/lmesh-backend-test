@@ -9,6 +9,7 @@ import {
 import { FastifyReply, FastifyRequest } from "fastify";
 import { BaseException } from "../exceptions/BaseException";
 import { ErrorResponseBody } from "../interfaces/exception.interfaces";
+import { ErrorCode } from "../enums/error-code.enums";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -19,7 +20,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         const reply = ctx.getResponse<FastifyReply>();
         const request = ctx.getRequest<FastifyRequest>();
 
-        const { status, message, details } = this.resolve(exception);
+        const { status, body } = this.resolve(exception);
 
         if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
             this.logger.error(
@@ -28,28 +29,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
             );
         }
 
-        const body: ErrorResponseBody = {
-            success: false,
-            statusCode: status,
-            message,
-            details,
-            path: request.url,
-            timestamp: new Date().toISOString(),
-        };
-
         reply.status(status).send(body);
     }
 
-    private resolve(exception: unknown): {
-        status: number;
-        message: string;
-        details: Record<string, any> | Record<string, any>[];
-    } {
+    private resolve(exception: unknown): { status: number; body: ErrorResponseBody } {
         if (exception instanceof BaseException) {
             return {
                 status: exception.getStatus(),
-                message: exception.message,
-                details: exception.details,
+                body: {
+                    message: exception.message,
+                    code: exception.code,
+                    ...(exception.errors ? { errors: exception.errors } : {}),
+                },
             };
         }
 
@@ -57,27 +48,49 @@ export class AllExceptionsFilter implements ExceptionFilter {
             const status = exception.getStatus();
             const res = exception.getResponse();
 
-            if (typeof res === "string") {
-                return { status, message: res, details: {} };
-            }
+            let message = exception.message;
+            let errors: Record<string, string[]> | undefined;
 
-            const obj = res as Record<string, any>;
-            let message = obj.message ?? exception.message;
-            if (Array.isArray(obj.message)) {
-                message = obj.message.join(", ");
+            if (typeof res !== "string") {
+                const obj = res as Record<string, any>;
+                if (Array.isArray(obj.message)) {
+                    message = obj.message.join(", ");
+                } else if (obj.message) {
+                    message = obj.message;
+                }
             }
 
             return {
                 status,
-                message,
-                details: obj,
+                body: {
+                    message,
+                    code: this.codeForStatus(status),
+                    ...(errors ? { errors } : {}),
+                },
             };
         }
 
         return {
             status: HttpStatus.INTERNAL_SERVER_ERROR,
-            message: "Internal Server Error",
-            details: {},
+            body: {
+                message: "Internal Server Error",
+                code: ErrorCode.INTERNAL_ERROR,
+            },
         };
+    }
+
+    private codeForStatus(status: number): ErrorCode {
+        switch (status) {
+            case HttpStatus.UNAUTHORIZED:
+                return ErrorCode.UNAUTHORIZED;
+            case HttpStatus.FORBIDDEN:
+                return ErrorCode.FORBIDDEN;
+            case HttpStatus.NOT_FOUND:
+                return ErrorCode.NOT_FOUND;
+            case HttpStatus.BAD_REQUEST:
+                return ErrorCode.INVALID_PAYLOAD;
+            default:
+                return ErrorCode.INTERNAL_ERROR;
+        }
     }
 }

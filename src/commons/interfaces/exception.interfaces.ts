@@ -1,8 +1,13 @@
+import { ErrorCode } from "../enums/error-code.enums";
+
 export interface ErrorResponseBody {
-    success: false;
-    statusCode: number;
     message: string;
-    details: Record<string, any> | Record<string, any>[];
-    path: string;
-    timestamp: string;
+    code: ErrorCode;
+    errors?: Record<string, string[]>;
+}
+
+export interface SuccessResponseBody<T = unknown> {
+    data: T;
+    message?: string;
+    code?: string;
 }
