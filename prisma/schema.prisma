@@ -26,7 +26,9 @@ model Analysis {
   id Int @id @default(autoincrement())
   status ReportStatus @default(PENDING)
   errorCount Int @default(0)
-  startedAt DateTime @default(now())
+  result Json? @db.JsonB
+  error String?
+  startedAt DateTime?
   finishedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
@@ -61,4 +63,5 @@ enum ReportStatus {
   PENDING
   PROCESSING
   FINISHED
+  FAILED
 }

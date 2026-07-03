@@ -1,18 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { SharedService } from './prisma.service';
+jest.mock('generated/prisma/client', () => ({ PrismaClient: class PrismaClient { } }));
+jest.mock('@prisma/adapter-pg', () => ({ PrismaPg: class PrismaPg { } }));
 
-describe('SharedService', () => {
-  let service: SharedService;
+import { PrismaService } from './prisma.service';
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [SharedService],
-    }).compile();
-
-    service = module.get<SharedService>(SharedService);
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+describe('PrismaService', () => {
+    it('should be defined', () => {
+        const config = { getOrThrow: jest.fn().mockReturnValue('postgresql://localhost/db') };
+        expect(new PrismaService(config as any)).toBeDefined();
+    });
 });
