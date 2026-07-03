@@ -28,6 +28,11 @@ export class AuthService {
         return safeUser;
     }
 
+    /**
+     * @description main logic process for login. Check password validity and token creation
+     * @param {LoginDto} dto login body payload
+     * @returns {{access_token: string}} token to be used in Authorization headers as Bearer
+     */
     async login(dto: LoginDto): Promise<{ access_token: string }> {
         const user = await this.validateUser(dto.username, dto.password);
         const payload: JwtPayload = { sub: user.id, username: user.username };

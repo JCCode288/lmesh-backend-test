@@ -27,7 +27,9 @@ export class AnalysisProcessor extends WorkerHost {
         const fileData = analysis?.report?.fileData?.data;
         if (!fileData)
             throw new UnrecoverableError(`No file data found for analysis #${analysisId}`);
+
         const content = Buffer.from(fileData).toString("utf-8");
+
         if (!content)
             throw new UnrecoverableError(`File is empty for analysis #${analysisId}`);
 

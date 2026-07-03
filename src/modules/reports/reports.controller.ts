@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import { ReportsService } from './reports.service';
 import { FileUploadException } from 'src/commons/exceptions/FileUploadException';
@@ -9,7 +9,6 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthUser } from '../auth/interfaces/jwt-payload.interface';
 import { ReportStatus } from 'generated/prisma/enums';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiQuery } from '@nestjs/swagger';
-import { ANALYSIS_JOB_NAME } from 'src/utils/constants/queue.constant';
 import { ALLOWED_TYPES } from 'src/utils/constants/report.constants';
 import { AllowedTypes, AllowedTypeValues } from './interfaces/report.interfaces';
 import { ReportDto } from './dto/reports.dto';
@@ -22,6 +21,11 @@ export class ReportsController {
 
     constructor(private readonly reportSvc: ReportsService) { }
 
+    /**
+     * @description getting all reports that can be filtered by putting query params status
+     * @param user {AuthUser} authenticated user
+     * @param status {ReportStatus} query for filtering reports by status
+     */
     @Get('')
     @ApiQuery({ name: 'status', required: false, enum: ReportStatus })
     async getAllReports(@CurrentUser() user: AuthUser, @Query('status') status?: string) {
@@ -29,6 +33,12 @@ export class ReportsController {
         return await this.reportSvc.getAllReports(user.userId, resolvedStatus);
     }
 
+
+    /**
+     * @description endpoint that accepts multipart/form-data. this endpoint should have ReportDto body payload, will add queue process for the file attached to body to be processed later using bullmq processor
+     * @param {FastifyRequest} req request from fastify
+     * @param {AuthUser} user authenticated user
+     */
     @Post('analyze')
     @ApiConsumes('multipart/form-data')
     @ApiBody({ type: ReportDto })
@@ -66,6 +76,20 @@ export class ReportsController {
             partNumber: partNumber.value,
             plantCode: plantCode.value,
         });
+    }
+
+    /**
+     * @description endpoint for downloading file that has been submitted to be analyzed
+     * @param {number} id id of the report file that needed to be downloaded
+     * @param user authenticated user
+     */
+    @Get('/analyze/:id/download')
+    @ResponseMessage("File downloaded")
+    async downloadReportFile(@Param('id') id: number, @CurrentUser() user: AuthUser) {
+        if (!id)
+            throw new InvalidPayload("Invalid ID");
+
+        return this.reportSvc.downloadFileData(user.userId, id);
     }
 
     private resolveType(filename: string, mimetype: string): AllowedTypeValues {

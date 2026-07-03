@@ -22,6 +22,10 @@ export class AgentService {
         this.humanPrompt = HumanMessagePromptTemplate.fromTemplate(DEFAULT_HUMAN_TEMPLATE);
     }
 
+    /**
+     * @description main agent process to analyze stringified / csv data. this method should be used only in queue processor
+     * @param data stringified json/csv data to be analyzed by LLM
+     */
     async analyze(data: string): Promise<AnalysisResult> {
         this.logger.debug("== Starting processing data ==");
         this.logger.debug(data);
@@ -39,12 +43,19 @@ export class AgentService {
         return result;
     }
 
+    /**
+     * @description setting system prompt on the fly
+     * @param template template format string template for AI. beware of using `{<something>}` inside this template, as it will be converted into template variables later on. currently pipeline only support {data}
+     */
     setSystemPrompt(template: string) {
         this.systemPrompt = SystemMessagePromptTemplate.fromTemplate(template);
 
         return this;
     }
-
+    /**
+    * @description setting human prompt on the fly
+    * @param template template format string template for AI. beware of using `{<something>}` inside this template, as it will be converted into template variables later on. currently pipeline only support {data}
+        */
     setHumanPrompt(template: string) {
         this.humanPrompt = HumanMessagePromptTemplate.fromTemplate(template);
 

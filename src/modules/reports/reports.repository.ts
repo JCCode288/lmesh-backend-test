@@ -41,6 +41,13 @@ export class ReportsRepository {
         });
     }
 
+    findReportWithFile(id: number, userId: number) {
+        return this.prisma.reports.findFirst({
+            where: { id, createdBy: userId },
+            include: { fileData: true }
+        })
+    }
+
     listReports(userId: number, status?: ReportStatus) {
         return this.prisma.reports.findMany({
             where: {

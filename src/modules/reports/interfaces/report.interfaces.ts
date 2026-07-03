@@ -1,3 +1,4 @@
+import { ReportStatus } from "generated/prisma/enums";
 import { ALLOWED_TYPES } from "src/utils/constants/report.constants";
 
 export type AllowedTypes = typeof ALLOWED_TYPES;
@@ -11,4 +12,10 @@ export interface SubmitReportInput {
     data: Buffer;
     partNumber: string;
     plantCode: string;
+}
+
+export interface SubmittedReport {
+    reportId: number;
+    analysisId: number;
+    status: ReportStatus;
 }

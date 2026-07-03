@@ -5,10 +5,12 @@ import { ResponseMessage } from 'src/commons/decorators/ResponseMessage.decorato
 
 @Controller('auth')
 export class AuthController {
-    private readonly logger = new Logger(AuthController.name);
-
     constructor(private readonly authSvc: AuthService) { }
 
+    /**
+     * @description used for login authentication for app.
+     * @param {LoginDto} dto body payload for login
+     */
     @Post('login')
     @ResponseMessage('Login successful')
     async login(@Body() dto: LoginDto): Promise<LoginResponseDto> {
