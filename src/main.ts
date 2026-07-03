@@ -37,7 +37,7 @@ async function bootstrap() {
     .setDescription('Analyze Pipeline API description')
     .setVersion('1.0')
     .addTag('Backend LMesh')
-    .addBearerAuth({ type: "http" }, "jwt")
+    .addBearerAuth({ type: 'http' }, 'jwt')
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);

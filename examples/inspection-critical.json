@@ -1,0 +1,18 @@
+{
+  "partNumber": "SHF-9001-X",
+  "plantCode": "PL-DETROIT-01",
+  "inspectionDate": "2026-07-03T02:05:00Z",
+  "inspector": "cmm-station-01",
+  "batchId": "B-20260703-0055",
+  "sampleSize": 4,
+  "measurements": [
+    { "feature": "journal_diameter", "nominal": 35.0, "tolerance": 0.02, "unit": "mm", "readings": [35.08, 35.11, 34.9, 35.07] },
+    { "feature": "runout", "nominal": 0.0, "tolerance": 0.01, "unit": "mm", "readings": [0.04, 0.06, 0.03, 0.05] },
+    { "feature": "hardness", "nominal": 58.0, "tolerance": 2.0, "unit": "HRC", "readings": [49.0, 51.0, 48.0, 50.0] }
+  ],
+  "visualChecks": [
+    { "check": "cracks", "result": "present", "location": "fillet_radius", "severity": "critical" },
+    { "check": "heat_discoloration", "result": "present", "location": "journal", "severity": "major" }
+  ],
+  "notes": "Hardness well below spec across all samples (possible heat-treat failure); visible crack at fillet radius; runout exceeds limit on every sample."
+}

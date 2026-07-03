@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { BaseException } from "../exceptions/BaseException";
-import { ErrorResponseBody } from "../interfaces/exception.interfaces";
+import { ErrorResponseBody } from "../exceptions/interfaces/exception.interfaces";
 import { ErrorCode } from "../enums/error-code.enums";
 
 @Catch()
@@ -33,11 +33,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     private resolve(exception: unknown): { status: number; body: ErrorResponseBody } {
+        const success = false;
+
         if (exception instanceof BaseException) {
+            const statusCode = exception.getStatus();
             return {
-                status: exception.getStatus(),
+                status: statusCode,
                 body: {
+                    success,
                     message: exception.message,
+                    statusCode,
                     code: exception.code,
                     ...(exception.errors ? { errors: exception.errors } : {}),
                 },
@@ -45,7 +50,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         }
 
         if (exception instanceof HttpException) {
-            const status = exception.getStatus();
+            const statusCode = exception.getStatus();
             const res = exception.getResponse();
 
             let message = exception.message;
@@ -61,10 +66,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
             }
 
             return {
-                status,
+                status: statusCode,
                 body: {
+                    success,
+                    statusCode,
                     message,
-                    code: this.codeForStatus(status),
+                    code: this.codeForStatus(statusCode),
                     ...(errors ? { errors } : {}),
                 },
             };
@@ -73,6 +80,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         return {
             status: HttpStatus.INTERNAL_SERVER_ERROR,
             body: {
+                success,
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
                 message: "Internal Server Error",
                 code: ErrorCode.INTERNAL_ERROR,
             },

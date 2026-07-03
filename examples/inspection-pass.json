@@ -1,0 +1,20 @@
+{
+  "partNumber": "BRK-2207-A",
+  "plantCode": "PL-DETROIT-01",
+  "inspectionDate": "2026-07-01T08:15:00Z",
+  "inspector": "line-scanner-04",
+  "batchId": "B-20260701-0912",
+  "sampleSize": 5,
+  "measurements": [
+    { "feature": "outer_diameter", "nominal": 52.0, "tolerance": 0.1, "unit": "mm", "readings": [52.01, 51.98, 52.03, 52.0, 51.99] },
+    { "feature": "bore_diameter", "nominal": 20.0, "tolerance": 0.05, "unit": "mm", "readings": [20.01, 20.0, 19.99, 20.0, 20.01] },
+    { "feature": "thickness", "nominal": 8.0, "tolerance": 0.1, "unit": "mm", "readings": [8.02, 7.99, 8.0, 8.01, 8.0] },
+    { "feature": "surface_roughness", "nominal": 1.6, "tolerance": 0.4, "unit": "Ra", "readings": [1.5, 1.6, 1.55, 1.62, 1.58] }
+  ],
+  "visualChecks": [
+    { "check": "cracks", "result": "none" },
+    { "check": "burrs", "result": "none" },
+    { "check": "corrosion", "result": "none" },
+    { "check": "coating_uniformity", "result": "uniform" }
+  ]
+}

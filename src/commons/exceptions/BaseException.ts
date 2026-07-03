@@ -1,10 +1,7 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { ErrorCode } from "../enums/error-code.enums";
+import { BaseExceptionOptions } from "./interfaces/exception.interfaces";
 
-export interface BaseExceptionOptions {
-    details?: Record<string, any> | Record<string, any>[];
-    errors?: Record<string, string[]>;
-}
 
 export class BaseException extends HttpException {
     public readonly code: ErrorCode;
@@ -12,7 +9,7 @@ export class BaseException extends HttpException {
     public errors?: Record<string, string[]>;
 
     constructor(
-        message: string = "Internal Server Error",
+        message: string = 'Internal Server Error',
         status: number = HttpStatus.INTERNAL_SERVER_ERROR,
         code: ErrorCode = ErrorCode.INTERNAL_ERROR,
         options: BaseExceptionOptions = {},

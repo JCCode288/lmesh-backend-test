@@ -1,0 +1,20 @@
+{
+  "partNumber": "GSK-4410-C",
+  "plantCode": "PL-MONTERREY-03",
+  "inspectionDate": "2026-07-02T13:40:00Z",
+  "inspector": "cmm-station-02",
+  "batchId": "B-20260702-1130",
+  "sampleSize": 6,
+  "measurements": [
+    { "feature": "outer_diameter", "nominal": 88.0, "tolerance": 0.1, "unit": "mm", "readings": [88.05, 88.21, 88.02, 88.19, 88.0, 88.24] },
+    { "feature": "bolt_hole_spacing", "nominal": 45.0, "tolerance": 0.08, "unit": "mm", "readings": [45.0, 45.02, 44.99, 45.15, 45.01, 44.98] },
+    { "feature": "thickness", "nominal": 3.0, "tolerance": 0.05, "unit": "mm", "readings": [3.0, 2.94, 3.01, 2.92, 3.0, 2.99] }
+  ],
+  "visualChecks": [
+    { "check": "cracks", "result": "none" },
+    { "check": "burrs", "result": "present", "location": "bolt_hole_3", "severity": "minor" },
+    { "check": "surface_scratches", "result": "present", "location": "sealing_face", "severity": "moderate" },
+    { "check": "coating_uniformity", "result": "uneven", "location": "edge" }
+  ],
+  "notes": "Several outer_diameter readings above upper limit; thickness dips below lower limit on 2 of 6 samples."
+}

@@ -4,7 +4,7 @@ import { ErrorCode } from "../enums/error-code.enums";
 
 export class UnauthorizedException extends BaseException {
     constructor(
-        message: string = "Unauthorized",
+        message: string = 'Unauthorized',
         code: ErrorCode = ErrorCode.UNAUTHORIZED,
         details: Record<string, any> | Record<string, any>[] = {},
     ) {

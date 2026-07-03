@@ -1,12 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { FastifyRequest } from 'fastify';
-import { AuthUser, JwtPayload } from '../interfaces/jwt-payload.interface';
+import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { UnauthorizedException } from 'src/commons/exceptions/UnauthorizedException';
-
-export interface AuthenticatedRequest extends FastifyRequest {
-    user: AuthUser;
-}
+import { AuthenticatedRequest } from '../interfaces/jwt-guard.interfaces';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {

@@ -8,7 +8,8 @@ import { Reflector } from "@nestjs/core";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { RESPONSE_MESSAGE_KEY } from "../decorators/ResponseMessage.decorator";
-import { SuccessResponseBody } from "../interfaces/exception.interfaces";
+import { FastifyReply } from "fastify";
+import { SuccessResponseBody } from "./interfaces/interceptor.interfaces";
 
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<T, SuccessResponseBody<T>> {
@@ -20,13 +21,22 @@ export class TransformInterceptor<T> implements NestInterceptor<T, SuccessRespon
             context.getClass(),
         ]);
 
+        const statusCode = context.switchToHttp().getResponse<FastifyReply>().statusCode;
+
         return next.handle().pipe(
             map((payload): SuccessResponseBody<T> => {
+                const success = true;
+
                 if (this.isEnvelope(payload)) {
+                    payload.statusCode = payload.statusCode || statusCode;
+                    payload.success = success;
+
                     return message ? { message, ...payload } : payload;
                 }
 
                 return {
+                    success,
+                    statusCode,
                     data: payload,
                     ...(message ? { message } : {}),
                 };
