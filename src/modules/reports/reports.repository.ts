@@ -60,6 +60,6 @@ export class ReportsRepository {
     }
 
     deleteReports(userId: number, reportId: number) {
-        return this.prisma.reports.delete({ where: { id: reportId, userId } })
+        return this.prisma.reports.delete({ where: { id: reportId, createdBy: userId } })
     }
 }
