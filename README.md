@@ -1,98 +1,157 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Parts Inspection Report Generator — Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A REST API where quality engineers upload part-inspection files (CSV/JSON) and receive an **AI-generated defect analysis report**. Uploads return immediately; the analysis runs in the background and the engineer polls for the result.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+- **NestJS 11** on the **Fastify** adapter, TypeScript
+- **Prisma 7** + **PostgreSQL** (driver adapter `@prisma/adapter-pg`)
+- **BullMQ** + **Redis** for background processing
+- **LangChain** + **Google Gemini** for the AI analysis
+- **JWT** (raw `@nestjs/jwt` + `bcrypt`) for auth
+- **Swagger / OpenAPI** at `/api/docs`
+- **Jest** for unit tests
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## AI provider: Google Gemini (why)
 
-## Project setup
+I chose **Google Gemini** (`gemini-2.5-flash`) via `@langchain/google`:
 
-```bash
-$ yarn install
-```
+- Free API key from [aistudio.google.com](https://aistudio.google.com), no credit card, generous free tier.
+- First-class **structured output** — `model.withStructuredOutput(zodSchema)` forces the model to return an object matching a Zod schema, so the report shape (summary / defects / recommended action) is guaranteed and parse failures are caught automatically.
+- Routed through LangChain, so swapping to Ollama or OpenRouter later means changing one line in `AgentService` — the schema, prompts, and worker stay the same.
 
-## Compile and run the project
+The AI genuinely runs; there is no hardcoded/mocked response.
 
-```bash
-# development
-$ yarn run start
+---
 
-# watch mode
-$ yarn run start:dev
+## Prerequisites
 
-# production mode
-$ yarn run start:prod
-```
+- **Node 20+** and **Yarn 4** (`packageManager` is pinned in `package.json`)
+- **PostgreSQL** running locally (or reachable via `DATABASE_URL`)
+- **Redis** running locally (BullMQ)
+- **Bun** — used only to run the TypeScript seed script
+- A **Gemini API key**
 
-## Run tests
+> Note: a `docker-compose.yml` is **not** included yet — Postgres and Redis are expected to be running locally. See `DECISIONS.md` §5.
+
+## Setup
 
 ```bash
-# unit tests
-$ yarn run test
+# 1. install deps
+yarn install
 
-# e2e tests
-$ yarn run test:e2e
+# 2. create .env (see below)
 
-# test coverage
-$ yarn run test:cov
+# 3. apply the database schema
+yarn dlx prisma migrate deploy
+
+# 4. seed two users (uses bun; ts-node cannot resolve the generated client)
+bun prisma/seed.ts
 ```
 
-## Deployment
+### `.env`
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```env
+NODE_ENV=development
+PORT=3000
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/lmesh-be?schema=public"
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+JWT_SECRET=change-me-in-prod
+JWT_EXPIRES_IN=1h
+
+GEMINI_API_KEY=your-real-gemini-key   # required — the app starts but analysis fails if empty
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_TEMPERATURE=0
+```
+
+## Run
 
 ```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+yarn start:dev      # watch mode
+# or
+yarn start          # one-off
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+App listens on `http://localhost:3000`. All routes are under the **`/api`** prefix.
 
-## Resources
+## API docs
 
-Check out a few resources that may come in handy when working with NestJS:
+Swagger UI: **`http://localhost:3000/api/docs`** (enabled only when `NODE_ENV=development`).
+Click **Authorize**, paste the `access_token` from login, then call the protected endpoints.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Seeded users
 
-## Support
+| username | password      |
+|----------|---------------|
+| `alice`  | `password123` |
+| `bob`    | `password123` |
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+## Endpoints
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+| Method | Path                   | Auth | Description                                   |
+|--------|------------------------|------|-----------------------------------------------|
+| POST   | `/api/auth/login`      | —    | Log in, returns a JWT access token            |
+| POST   | `/api/reports/analyze` | JWT  | Upload a CSV/JSON file, queue analysis (async)|
+| GET    | `/api/reports`         | JWT  | List your reports, optional `?status=` filter |
+| GET    | `/api/health`          | —    | Health check                                  |
 
-## License
+### Response envelopes
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```jsonc
+// success
+{ "data": { ... }, "message": "..." }
+// error
+{ "message": "...", "code": "INVALID_CREDENTIALS", "errors": { "field": ["..."] } }
+```
+
+---
+
+## End-to-end example (curl)
+
+```bash
+# 1. log in -> copy the access_token
+curl -s -X POST http://localhost:3000/api/auth/login \
+  -H 'content-type: application/json' \
+  -d '{"username":"alice","password":"password123"}'
+# => { "data": { "access_token": "eyJ..." }, "message": "Login successful" }
+
+TOKEN="eyJ..."   # paste the token
+
+# 2. upload an inspection file (async) -> returns reportId / analysisId / PENDING
+curl -s -X POST http://localhost:3000/api/reports/analyze \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "file=@examples/inspection-defects.json" \
+  -F "partNumber=GSK-4410-C" \
+  -F "plantCode=PL-MONTERREY-03"
+
+# 3. poll for the result — status goes PENDING -> PROCESSING -> FINISHED (or FAILED)
+curl -s http://localhost:3000/api/reports -H "Authorization: Bearer $TOKEN"
+```
+
+Sample inspection files are in [`examples/`](./examples): a clean part, a part with defects,
+a critical failure, and an invalid-data file that exercises the fast-fail path.
+
+## Tests
+
+```bash
+yarn test        # unit tests
+yarn test:cov    # with coverage
+```
+
+Covers the critical logic paths: login/JWT, the guard, report submission + queueing,
+the analysis worker (success, retry, unrecoverable failure), and the data-access layer.
+
+## Resilience summary
+
+- Failed AI calls retry **3× with exponential backoff** (2s base).
+- Unanalyzable input fast-fails (no wasted retries).
+- A permanently failed report is stored as `status = FAILED` with the reason in the `error`
+  column and an `errorCount` — all visible via `GET /api/reports`.
+
+See **`DECISIONS.md`** for the architecture decision record.

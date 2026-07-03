@@ -23,11 +23,11 @@ import { AuthModule } from './modules/auth/auth.module';
           connection: {
             host: configSvc.get('REDIS_HOST'),
             port: configSvc.get('REDIS_PORT'),
-          }
+          },
         };
 
         return bullConfig;
-      }
+      },
     }),
     SharedModule,
     AnalyzeModule,
@@ -43,4 +43,4 @@ import { AuthModule } from './modules/auth/auth.module';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

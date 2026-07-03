@@ -1,18 +1,20 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationError, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import fastifyHelmet from '@fastify/helmet';
 import multipart from '@fastify/multipart';
 import { TransformInterceptor } from './commons/interceptors/TransformInterceptor';
 import { InvalidPayload } from './commons/exceptions/InvalidPayload';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
-
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter()
+    new FastifyAdapter(),
   );
   app.setGlobalPrefix('/api');
 
@@ -41,7 +43,9 @@ async function bootstrap() {
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/api/docs', app, documentFactory, { swaggerUiEnabled: process.env.NODE_ENV !== 'development' ? false : true });
+  SwaggerModule.setup('/api/docs', app, documentFactory, {
+    swaggerUiEnabled: process.env.NODE_ENV !== 'development' ? false : true,
+  });
 
   await app.register(multipart, {
     limits: { fileSize: 5 * 1024 * 1024 },
@@ -70,6 +74,6 @@ async function bootstrap() {
     },
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
 bootstrap();

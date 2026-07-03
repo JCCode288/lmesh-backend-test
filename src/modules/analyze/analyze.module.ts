@@ -7,4 +7,4 @@ import { AnalyzeRepository } from './analyze.repository';
   providers: [AnalyzeService, AnalyzeRepository, AgentService],
   exports: [AnalyzeService, AnalyzeRepository],
 })
-export class AnalyzeModule { }
+export class AnalyzeModule {}

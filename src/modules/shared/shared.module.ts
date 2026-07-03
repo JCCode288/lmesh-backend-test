@@ -5,6 +5,6 @@ import { RedisService } from './redis.service';
 @Global()
 @Module({
   providers: [PrismaService, RedisService],
-  exports: [PrismaService, RedisService]
+  exports: [PrismaService, RedisService],
 })
-export class SharedModule { }
+export class SharedModule {}

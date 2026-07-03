@@ -8,13 +8,8 @@ import { SharedModule } from '../shared/shared.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [
-    QueueModule,
-    AnalyzeModule,
-    SharedModule,
-    AuthModule
-  ],
+  imports: [QueueModule, AnalyzeModule, SharedModule, AuthModule],
   providers: [ReportsService, ReportsRepository],
-  controllers: [ReportsController]
+  controllers: [ReportsController],
 })
-export class ReportsModule { }
+export class ReportsModule {}

@@ -20,4 +20,4 @@ import { ANALYSIS_QUEUE_NAME } from 'src/utils/constants/queue.constant';
   providers: [QueueService, AnalysisProcessor],
   exports: [QueueService],
 })
-export class QueueModule { }
+export class QueueModule {}
