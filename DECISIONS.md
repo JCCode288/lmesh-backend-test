@@ -25,3 +25,4 @@ System will try 3 times with strategy backoff 2 seconds to accomodate rate limit
 Any logic to retrieve data to database is abstracted to repository, any business logic to for the app is separated in service. I want single responsibilty to reduce cognitive loads when reading the code
 
 ## 5. What you would do differently
+I would separating agent module and make it more templateable for future use in different case. I also will make functionals more resilient by using transaction wrapper instead of current implementation
