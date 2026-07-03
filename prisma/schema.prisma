@@ -33,7 +33,7 @@ model Analysis {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
   reportId Int @unique
-  report Reports @relation(fields: [reportId], references: [id])
+  report Reports @relation(fields: [reportId], references: [id], onDelete: Cascade)
 }
 
 model Reports {
@@ -44,7 +44,7 @@ model Reports {
   analysis Analysis?
   fileData FileDatas?
   createdBy Int
-  user Users @relation(fields: [createdBy], references: [id])
+  user Users @relation(fields: [createdBy], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 }
@@ -54,7 +54,7 @@ model FileDatas {
   data Bytes
   metadata Json? @db.JsonB
   reportId Int @unique
-  report Reports @relation(fields: [reportId], references: [id])
+  report Reports @relation(fields: [reportId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 }
